@@ -1,0 +1,45 @@
+/*Negru Mihai Vlad 323CB*/
+Server facut in c++(pentru a putea utiliza vector din c++)
+	Am creat doi socketi unul pentru tcp unul pentru udp ,de pe cel udp primesc mesaje de la
+orice client udp, si de la cel tcp creez noi conexiuni cu clientii tcp, mi-am creat doua
+clase:
+	Topic are:
+		name -(char*) salvez numele topicului
+		SF - (int) utlizat ca flag pentru a putea stii daca trebuie salvat mesajele primite
+		sau nu 
+
+	Client avand:
+		id-ul -(char*) salvand stringul de patru caractere reprezentand id-ul clientului
+			  -id-ul este obtinut imediat dupa realizarea conexiunii clientul tcp trimite
+			  mesaj cu id-ul 
+		socket -(int) salvez pe ce socket trb trimis mesajul catre clientul cu id-ul..
+		open -(int) il utilizez ca un flag sa verific daca e pornit sau nu clientul
+		t - (vector(clasa Topic)) salvez topicurile la care a dat subscribe clientul
+		m - vector(char*) salvez mesajele primite cat timp a fost inchis clientul
+
+	Am o functie de parcurge a mesajului primit de la udp care imi returneaza mesajul care
+trebuie trimis la clientii tcp
+	In momentul in care primesc un mesaj de la un client udp utilizez aceasta functie pentru
+a converti (oarecum) mesajul astfel incat sa fie unul pentru clientul tcp dupa il trimit
+intr-o functie sends care verifica ce client are salvat in vectorul de topic ,topicul la care
+a fost primit acel mesaj,si trimit mesajul la acel client ori il salvez in vectorul de 
+mesaje daca cumva este inchis si clientul a activat SF.
+	
+	Pentru mesajele de la tcp de tip subscribe/unsubscribe la fel am avut o functie care
+interpreta mesajul si apoi era adaugat/scos din vectorul de topicuri din clientul care a 
+trimis mesajul respectiv,identificand clientul in functie de socket-ul lui
+
+	In cazul de deconectare se verifica socket-ul in vectorul de clienti pentru a seta flag-ul
+acelui client deconectat
+	
+	In cazul de reconectare se asteapta id-ul ,se cauta id-ul in vectorul de clienti in cazul
+in care e gasit si nu are open == 0 inseamna ca acel client nu este cel corect si nu este
+salvat in vector astfel orice comanda este primita de la acel client nu este relevanta
+,intr-adevar daca sunt mai multi clienti de genul poate afecta server-ul, si am modificat v-a
+inchide socket-ul acelui client
+
+Client facut in c
+	Se ceraza socket-ul cu datele primite ca argumente, dup are un select in care verifica
+daca primeste mesaj de la server sau din linia de comanda, cand primesc mesajul in linia de
+comanda trimit mesajul la server, in cazul in care este exit,ies din while inchid socket-ul
+si si ies din program.   
